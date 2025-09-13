@@ -3,11 +3,22 @@
 const appendRowBtn = document.querySelector('.append-row');
 const removeRowBtn = document.querySelector('.remove-row');
 const appendColumnBtn = document.querySelector('.append-column');
-const removeColumnButton = document.querySelector('.remove-column');
+const removeColumnBtn = document.querySelector('.remove-column');
 const table = document.querySelector('.field');
-const rows = table.rows;
+const tbody = table.tBodies[0] || table.querySelector('tbody');
+const rows = tbody.rows;
 
 function updateButtonsState() {
+  let firstDataRow = tbody.rows[0];
+
+  if (firstDataRow.cells[0].tagName.toLowerCase() === 'th') {
+    if (tbody.rows.length > 1) {
+      firstDataRow = tbody.rows[1];
+    } else {
+      return;
+    }
+  }
+
   if (rows.length === 2) {
     removeRowBtn.disabled = true;
   } else {
@@ -27,14 +38,22 @@ function updateButtonsState() {
   }
 
   if (rows[0].cells.length === 2) {
-    removeColumnButton.disabled = true;
+    removeColumnBtn.disabled = true;
   } else {
-    removeColumnButton.disabled = false;
+    removeColumnBtn.disabled = false;
   }
 }
 
 appendRowBtn.addEventListener('click', () => {
-  const currentColumns = rows[0].cells.length;
+  // eslint-disable-next-line curly
+  if (tbody.rows.length >= 10) return; // обмеження максимум 10 рядків
+
+  const firstDataRow =
+    tbody.rows[0].cells[0].tagName.toLowerCase() === 'th'
+      ? tbody.rows[1]
+      : tbody.rows[0];
+
+  const currentColumns = firstDataRow.cells.length;
   const newTr = document.createElement('tr');
 
   for (let i = 0; i < currentColumns; i++) {
@@ -43,18 +62,29 @@ appendRowBtn.addEventListener('click', () => {
     newTr.appendChild(newTd);
   }
 
-  table.appendChild(newTr);
+  tbody.appendChild(newTr);
 
   updateButtonsState();
 });
 
 removeRowBtn.addEventListener('click', () => {
-  table.deleteRow(rows.length - 1);
+  // eslint-disable-next-line curly
+  if (tbody.rows.length <= 2) return;
+
+  tbody.deleteRow(rows.length - 1);
 
   updateButtonsState();
 });
 
 appendColumnBtn.addEventListener('click', () => {
+  const firstDataRow =
+    tbody.rows[0].cells[0].tagName.toLowerCase() === 'th'
+      ? tbody.rows[1]
+      : tbody.rows[0];
+
+  // eslint-disable-next-line curly
+  if (firstDataRow.cells.length >= 10) return;
+
   for (let i = 0; i < rows.length; i++) {
     const newTd = document.createElement('td');
 
@@ -64,7 +94,15 @@ appendColumnBtn.addEventListener('click', () => {
   updateButtonsState();
 });
 
-removeColumnButton.addEventListener('click', () => {
+removeColumnBtn.addEventListener('click', () => {
+  const firstDataRow =
+    tbody.rows[0].cells[0].tagName.toLowerCase() === 'th'
+      ? tbody.rows[1]
+      : tbody.rows[0];
+
+  // eslint-disable-next-line curly
+  if (firstDataRow.cells.length <= 2) return;
+
   for (let i = 0; i < rows.length; i++) {
     rows[i].deleteCell(rows[i].cells.length - 1);
   }
